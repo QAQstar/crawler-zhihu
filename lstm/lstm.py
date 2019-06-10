@@ -7,10 +7,10 @@ from keras.layers.embeddings import Embedding
 from keras.layers.recurrent import LSTM
 from keras.layers.core import Dense, Dropout, Activation
 import sklearn.model_selection
-import logging
+# import logging
 import numpy as np
-import gensim
-from gensim.models.word2vec import Word2Vec
+# import gensim
+# from gensim.models.word2vec import Word2Vec
 from gensim.corpora.dictionary import Dictionary
 import pickle
 
@@ -47,59 +47,17 @@ def create_dictionaries(p_model):
         w2vec[word] = p_model[word]
     return w2indx, w2vec
 
-
-# word 2 vec
-def word2vec_fun():
-    logging.basicConfig(format='%(asctime)s : %(levelname)s : %(message)s', level=logging.INFO)
-    sentences = to_train_vec2('train_data/sample.positive.txt')    # 获取句子列表，每个句子又是词汇的列表 negative?
-    sentences2 = to_train_vec2('train_data/sample.negative.txt')     # chedan
-    sentences.extend(sentences2)
-    print(len(sentences))
-    print('训练Word2vec模型（可尝试修改参数）...')
-    model = Word2Vec(sentences,
-                     size=vocab_dim,  # 词向量维度
-                     min_count=min_count,  # 词频阈值
-                     window=window)  # 窗口大小
-    model_name = "word2vec"
-    model.save(model_name + '.model')  # 保存模型
-    model = gensim.models.word2vec.Word2Vec.load('word2vec.model')
-    # 索引字典、词向量字典
-    index_dict, word_vectors= create_dictionaries(model)
-    # 存储为pkl文件
-    pkl_name = "vec_lstm"
-    output = open(pkl_name + u".pkl", 'wb')
-    pickle.dump(index_dict, output)  # 索引字典
-    pickle.dump(word_vectors, output)  # 词向量字典
-    output.close()
-
-
 def text_to_index_array(p_new_dic, p_sen):  # 文本转为索引数字模式
     new_sentences = []
     for sen in p_sen:
         new_sen = []
         for word in sen:
-            try:
-                new_sen.append(p_new_dic[word])  # 单词转索引数字
-            except:
-                new_sen.append(0)  # 索引字典里没有的词转为数字0
+            new_sen.append(p_new_dic.get(word, 0))  # 单词转索引数字，索引字典里没有的词转为数字0
         new_sentences.append(new_sen)
     return np.array(new_sentences)
 
-# 最需要改进的是智能贴标签，暂时没写
-def my_sorted():
-    alist=[0 for i in range(5000)]  # 消极
-    blist=[1 for i in range(5000)]  # 积极
-    alist.extend(blist)
-    # print("???", alist[0])
-    return alist
-
-def read_sample_test(sample_path='sampletest.txt'):
-    with open(sample_path, 'r', encoding='utf8') as file:
-        result = [line.split(' ') for line in file]
-
-    return result
-
-def retrain(train_rounds, sample_path='sample_path.txt', vec_path='vec_lstm.pkl', model_path='lstmModel.pkl'):
+def retrain(train_rounds, sentences_and_labels_path='sentences_and_labels.pkl', vec_path='vec_lstm.pkl',
+            model_path='lstmModel.pkl'):
     # 读取大语料文本
     with open(vec_path, 'rb') as f: # 预先训练好的
         index_dict = pickle.load(f) # 索引字典，{单词: 索引数字}
@@ -112,13 +70,12 @@ def retrain(train_rounds, sample_path='sample_path.txt', vec_path='vec_lstm.pkl'
         embedding_weights[index, :] = word_vectors[w]  # 词向量矩阵，第一行是0向量（没有索引为0的词语，未被填充）
 
     # 读取语料分词文本，转为句子列表（句子为词汇的列表）
-    # print("请选择语料的分词文本...")
-
-    allsentences = read_sample_test(sample_path)
-
     # 读取语料类别标签
     # print u"请选择语料的类别文本...（用0，1分别表示消极、积极情感）"
-    labels = my_sorted()
+    with open(sentences_and_labels_path, 'rb') as f:
+        allsentences = pickle.load(f)
+        labels = pickle.load(f)
+
     # 划分训练集和测试集，此时都是list列表
     X_train_l, X_test_l, y_train_l, y_test_l = \
         sklearn.model_selection.train_test_split(allsentences, labels, test_size=0.2)
@@ -190,4 +147,4 @@ def get_result(test, vec_path='vec_lstm.pkl', model_path='lstmModel.pkl'):
 
 
 if __name__ == "__main__":
-    print(get_result(['老大好强啊', '老大保研稳了', '老大地表最强']))
+    print(get_result(['老大真强', '今天天气特别好', '今天天气特别差', '我好菜啊', '我终于写完实验啦！！！']))

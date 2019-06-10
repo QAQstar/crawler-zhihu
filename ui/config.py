@@ -59,7 +59,7 @@ class Dialog(QDialog, Ui_Dialog):
                                          QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
             if reply == QMessageBox.Yes:
                 import sys
-                retrain(cur_lstm_round, sample_path=sys.path[0] + '/lstm/sampleTest.txt',
+                retrain(cur_lstm_round, sentences_and_labels_path=sys.path[0] + '/lstm/sentences_and_labels.pkl',
                         vec_path=sys.path[0] + '/lstm/vec_lstm.pkl', model_path=sys.path[0] + '/lstm/lstmModel.pkl')
             else:
                 self.horizontalSlider_2.setValue(pre_lstm_round)
