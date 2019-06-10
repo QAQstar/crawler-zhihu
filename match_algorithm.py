@@ -94,6 +94,23 @@ class BM:
                 j += max(self._BMgs[i], self._BMbc.get(primary_string[i+j],pattern_length)-(pattern_length-1-i))
         return -1
 
+    def find_all(self, primary_string):
+        result = []
+        primary_length, pattern_length = len(primary_string), len(self.pattern)
+
+        j = 0
+        while j <= primary_length - pattern_length:
+            i = pattern_length - 1
+            while i >= 0 and self.pattern[i] == primary_string[i + j]:
+                i -= 1
+            if i < 0:
+                result.append(j)
+                j += self._BMgs[0]
+            else:
+                j += max(self._BMgs[i],
+                self._BMbc.get(primary_string[i + j], pattern_length) - (pattern_length - 1 - i))
+        return result
+
 class AC_node:
     def __init__(self):
         self.goto = {}
@@ -102,7 +119,7 @@ class AC_node:
 
 class AC:
     def __init__(self, patterns):
-        self.patterns = patterns
+        self.patterns = set(patterns)
         self.root = AC_node()
         # 建立goto表
         for pattern in self.patterns:
@@ -138,7 +155,6 @@ class AC:
             node_one_floor = node_next_floor
 
     def find(self, primary_string):
-        # result = []
         cur = self.root
 
         i = 0
@@ -149,13 +165,29 @@ class AC:
                 cur = cur.goto[c]
             else:
                 cur = self.root
-            if len(cur.output) != 0:
+            if len(cur.output) > 0:
                 return i-(len(cur.output[0])-1)
-            # for item in cur.output:
-            #     result.append((i-(len(item)-1), item))
             i += 1
 
         return -1
+
+    def find_all(self, primary_string):
+        result = []
+        cur = self.root
+
+        i = 0
+        for c in primary_string:
+            while cur is not None and cur.goto.get(c) is None:
+                cur = cur.fail
+            if cur is not None:
+                cur = cur.goto[c]
+            else:
+                cur = self.root
+            for item in cur.output:
+                result.append((i-(len(item)-1), item))
+            i += 1
+
+        return result
 
 if __name__ == '__main__':
     test = AC(['mother', 'father'])

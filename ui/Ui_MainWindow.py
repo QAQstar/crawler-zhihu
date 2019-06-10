@@ -95,7 +95,7 @@ class Ui_MainWindow(object):
         self.pushButton.setText(_translate("MainWindow", "加载"))
         self.pushButton_2.setToolTip(_translate("MainWindow", "更新当前热榜，并写入数据库中"))
         self.pushButton_2.setText(_translate("MainWindow", "爬取"))
-        self.pushButton_3.setToolTip(_translate("MainWindow", "清除一个月以上的热榜数据"))
+        self.pushButton_3.setToolTip(_translate("MainWindow", "清除指定时间以前的数据，并重新进行一次爬取"))
         self.pushButton_3.setText(_translate("MainWindow", "清除缓存"))
         self.menu.setTitle(_translate("MainWindow", "选项"))
         self.menu_2.setTitle(_translate("MainWindow", "关于"))

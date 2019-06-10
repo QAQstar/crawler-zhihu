@@ -5,7 +5,7 @@ Module implementing MainWindow.
 """
 
 from PyQt5.QtCore import pyqtSlot
-from PyQt5.QtWidgets import QMainWindow
+from PyQt5.QtWidgets import QMainWindow, QMessageBox
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import QListWidgetItem
 
@@ -78,6 +78,18 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         self.label.setText('上次爬取热榜时间：%d-%d-%d %d:%d:%d' % (time_tuple.tm_year, time_tuple.tm_mon,
                             time_tuple.tm_mday, time_tuple.tm_hour, time_tuple.tm_min, time_tuple.tm_sec))
         self.load_data()
+
+    @pyqtSlot()
+    def on_pushButton_3_clicked(self):
+        """
+        Slot documentation goes here.
+        """
+        zhihu_hot.clear_cache()
+        self.load_data()
+        time_tuple = localtime(db.hot_list.find_one(sort=[('_id', pymongo.DESCENDING)])['_id'])
+        self.label.setText('上次爬取热榜时间：%d-%d-%d %d:%d:%d'%(time_tuple.tm_year, time_tuple.tm_mon,
+                            time_tuple.tm_mday, time_tuple.tm_hour, time_tuple.tm_min, time_tuple.tm_sec))
+        QMessageBox.information(self, '提示', '清理完成')
 
     @pyqtSlot()
     def on_action_triggered(self):
