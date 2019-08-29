@@ -18,6 +18,7 @@ import webbrowser
 import lstm.lstm as LSTM
 import jieba
 import math
+from time import perf_counter
 
 
 
@@ -165,6 +166,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         search_thread = db.setting.find_one({'_id': 1})['search_thread']
         this_question = db['question_' + str(self.index)]
 
+        start = perf_counter()
         if len(text) > 1 and (text[0] == ':' or text[0] == '：'): # 相关度搜索
             words = jieba.lcut_for_search(text[1:]) # 搜索引擎模式
 
@@ -184,7 +186,7 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                 answer_length_avg += len(answer['content'])
                 answer_index_list.append(answer['_id'])
             answer_length_avg = answer_length_avg / answer_count
-            print('开始进行模糊搜索，分词：')
+            print('开始进行模糊搜索，线程数'+str(search_thread)+'，分词如下')
             print(words)
             executor = ThreadPoolExecutor(max_workers=search_thread)
             fs = [executor.submit(self._get_BM25, words, words_bm_list, part1, answer_index, answer_length_avg) for
@@ -227,6 +229,8 @@ class MainWindow(QMainWindow, Ui_MainWindow):
                     tab_index += 1
         else:
             return
+        end = perf_counter()
+        print('本次搜索用时：'+str(end-start)+'s')
 
     def _add_accurate_search_tab(self, algorithm, answer):
         is_find = algorithm.find(answer['content'])
@@ -299,7 +303,11 @@ class MainWindow(QMainWindow, Ui_MainWindow):
         Line2 = InfiniteLine(pos=0.5, pen=(0,0,255), angle=0, movable=False)
         Line3 = InfiniteLine(pos=1, pen=(0,255,0), angle=0, movable=False)
         import sys
-        data = LSTM.get_result(answers, vec_path=sys.path[0] + '/lstm/vec_lstm.pkl', model_path=sys.path[0] + '/lstm/lstmModel.pkl')
+        start = perf_counter()
+        data = LSTM.get_result(answers, vec_path=sys.path[0] + '/lstm/vec_lstm.pkl',
+                               model_path=sys.path[0] + '/lstm/lstmModel.pkl')
+        end = perf_counter()
+        print('情感分析总用时：'+str(end-start)+'s')
         tricks = [(0, '消极'), (0.5, '中立'), (1, '积极')]
         strAxis = AxisItem(orientation='left', maxTickLength=3)
         strAxis.setTicks([tricks, ])
