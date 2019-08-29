@@ -22,7 +22,7 @@
 ### 运行
 
 * 须在zhihu_hot.py中填入登录知乎后的cookie，否则无法正常运行
-​		执行GUI.py
+* 执行GUI.py
 
 
 
